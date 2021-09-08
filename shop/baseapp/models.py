@@ -15,7 +15,7 @@ from django.urls import reverse
 
 User = get_user_model()
 
-# аналог функции get_absolute_url
+# аналог функции get_absolute_url создает url для любой категории товара
 def get_product_url(obj, viewname):
     ct_model = obj.__class__._meta.model_name
     return reverse(viewname, kwargs={'ct_model': ct_model, 'slug': obj.slug})
