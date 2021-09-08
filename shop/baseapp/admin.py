@@ -1,29 +1,54 @@
-from django.contrib import admin
-from django.forms import ModelChoiceField, ModelForm, ValidationError
-
-from .models import *
-
 # библиотека для проверки размера фото
 from PIL import Image
 
+# django
+from django.contrib import admin
+from django.forms import ModelChoiceField, ModelForm, ValidationError
+from django.utils.safestring import mark_safe   # превращает строку в html код со стилями и тэгом
+
+# Мои
+from .models import *
+
+#? пример как можно использовать PIL, чтобы он обрезал фото
+# class Profile(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE)
+#     image = models.ImageField(default='default.jpg', upload_to=upload_profile)
+
+#     def __str__(self):
+#         return f'Profile {self.user.username}'
+
+#     def save(self):
+#         super().save()
+#         img = Image.open(self.image.path)
+
+#         if img.height > 300 or img.width > 300:
+#             output_size = (300, 300)
+#             img.thumbnail(output_size)
+#             img.save(self.image.path)
 
 # Проверка на размер загружаемой фотографии в админке
 class NotebookAdminForm(ModelForm):
 
-    MIN_RESOLUTION = (400, 400)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['image'].help_text = 'Загружайте изображения с минимальным разрешением {}x{}'.format(
-            *self.MIN_RESOLUTION
+        self.fields['image'].help_text = mark_safe(
+            '<span style="color:red; font-size:14px;">Загружайте изображения с минимальным разрешением {}x{}</span>'.format(
+                *Product.MIN_RESOLUTION
+            )
         )
 
     def clean_image(self):
-        image = self.cleaned_data['image']
-        img = Image.open(image)
-        min_height, min_width = self.MIN_RESOLUTION
-        if img.height < min_height and img.width < min_width:
+        image = self.cleaned_data['image']      # это сам файл
+        img = Image.open(image)         # это кортеж со значениями файлы, размеры и т.п.
+        min_width, min_height = Product.MIN_RESOLUTION     # обязательно сначала 
+        max_width, max_height = Product.MAX_RESOLUTION     # надо указывать ширину!
+
+        if image.size > Product.MAX_IMAGE_SIZE:
+            raise ValidationError('Размер изображения не должен превышать 3 мегабайта!')
+        if img.width < min_width or img.height < min_height:
             raise ValidationError('Разрешение изображения меньше минимального!')
+        if img.width > max_width or img.height > max_height:
+            raise ValidationError('Разрешение изображения больше максимального!')
         return image
 
 
