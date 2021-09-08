@@ -32,24 +32,25 @@ class NotebookAdminForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['image'].help_text = mark_safe(
-            '<span style="color:red; font-size:14px;">Загружайте изображения с минимальным разрешением {}x{}</span>'.format(
-                *Product.MIN_RESOLUTION
+            '''<span style="color:red; font-size:14px;">При загрузке изображения с разрешением больше {}x{} оно будет обрезано!</span>
+            '''.format(
+                *Product.MAX_RESOLUTION
             )
         )
 
-    def clean_image(self):
-        image = self.cleaned_data['image']      # это сам файл
-        img = Image.open(image)         # это кортеж со значениями файлы, размеры и т.п.
-        min_width, min_height = Product.MIN_RESOLUTION     # обязательно сначала 
-        max_width, max_height = Product.MAX_RESOLUTION     # надо указывать ширину!
+    # def clean_image(self):
+    #     image = self.cleaned_data['image']      # это сам файл
+    #     img = Image.open(image)         # это кортеж со значениями файлы, размеры и т.п.
+    #     min_width, min_height = Product.MIN_RESOLUTION     # обязательно сначала 
+    #     max_width, max_height = Product.MAX_RESOLUTION     # надо указывать ширину!
 
-        if image.size > Product.MAX_IMAGE_SIZE:
-            raise ValidationError('Размер изображения не должен превышать 3 мегабайта!')
-        if img.width < min_width or img.height < min_height:
-            raise ValidationError('Разрешение изображения меньше минимального!')
-        if img.width > max_width or img.height > max_height:
-            raise ValidationError('Разрешение изображения больше максимального!')
-        return image
+    #     if image.size > Product.MAX_IMAGE_SIZE:
+    #         raise ValidationError('Размер изображения не должен превышать 3 мегабайта!')
+    #     if img.width < min_width or img.height < min_height:
+    #         raise ValidationError('Разрешение изображения меньше минимального!')
+    #     if img.width > max_width or img.height > max_height:
+    #         raise ValidationError('Разрешение изображения больше максимального!')
+    #     return image
 
 
 # админка ноутбука

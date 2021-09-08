@@ -1,10 +1,15 @@
+import sys
 # библиотека для проверки размера фото
 from PIL import Image
+
+# конвертирует фотографии
+from io import BytesIO
 
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 
 User = get_user_model()
@@ -81,15 +86,28 @@ class Product(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        # image = self.image
+        # img = Image.open(image)
+        # min_width, min_height = self.MIN_RESOLUTION     # обязательно сначала 
+        # max_width, max_height = self.MAX_RESOLUTION     # надо указывать ширину!
+        # if img.width < min_width or img.height < min_height:
+        #     raise MinResolutionErrorException('Разрешение изображения меньше минимального!')
+        # if img.width > max_width or img.height > max_height:
+        #     raise MaxResolutionErrorException('Разрешение изображения больше максимального!')
         image = self.image
         img = Image.open(image)
-        min_width, min_height = self.MIN_RESOLUTION     # обязательно сначала 
-        max_width, max_height = self.MAX_RESOLUTION     # надо указывать ширину!
-        if img.width < min_width or img.height < min_height:
-            raise MinResolutionErrorException('Разрешение изображения меньше минимального!')
-        if img.width > max_width or img.height > max_height:
-            raise MaxResolutionErrorException('Разрешение изображения больше максимального!')
-        return image
+        new_img = img.convert('RGB')
+        w_percent = (self.MAX_RESOLUTION[0] / float(img.size[0]))
+        h_size = int((float(img.size[1]) * float(w_percent)))
+        resized_new_img = new_img.resize((self.MAX_RESOLUTION[0], h_size), Image.ANTIALIAS)
+        # resized_new_img = new_img.resize((200, 200), Image.ANTIALIAS)
+        filestream = BytesIO()
+        resized_new_img.save(filestream, 'JPEG', quality=90)
+        filestream.seek(0)
+        self.image = InMemoryUploadedFile(
+            filestream, 'ImageField', self.image.name, 'jpeg/image', sys.getsizeof(filestream), None
+        )
+        super().save(*args, **kwargs)
 
 
 class Notebook(Product):
