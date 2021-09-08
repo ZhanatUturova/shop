@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load specifications %}
 
 {% block content %}
 
@@ -19,7 +20,10 @@
         <p>Цена: {{ product.price }}</p>
         <p>Описание: {{ product.description }}</p>
     </div>
-    <p class="mt-4">Характеристики: {{ product. }}</p>
+    <p class="mt-4">Характеристики:</p>
+
+    {{ product|product_spec }}
+
     {% if product.category.slug == 'notebooks' %}
         {% include 'notebook_specification.html' %}
     {% else %}
