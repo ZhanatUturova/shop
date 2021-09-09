@@ -46,6 +46,8 @@ PRODUCT_SPEC = {
 def get_product_spec(product, model_name):
     table_content = ''
     for name, value in PRODUCT_SPEC[model_name].items():
+        if model_name == 'smartphone' and not product.sd and value == 'sd_volum_max':
+            continue
         table_content += TABLE_CONTENT.format(name=name, value=getattr(product, value))
     return table_content
 
@@ -53,9 +55,9 @@ def get_product_spec(product, model_name):
 @register.filter
 def product_spec(product):
     model_name = product.__class__._meta.model_name
-    if isinstance(product, Smartphone):
-        if not product.sd:
-            PRODUCT_SPEC['smartphone'].pop('Максимальный объем встраиваемой памяти')
-        else:
-            PRODUCT_SPEC['smartphone']['Максимальный объем встраиваемой памяти'] = 'sd_volum_max'
+    # if isinstance(product, Smartphone):
+    #     if not product.sd:
+    #         PRODUCT_SPEC['smartphone'].pop('Максимальный объем встраиваемой памяти')
+    #     else:
+    #         PRODUCT_SPEC['smartphone']['Максимальный объем встраиваемой памяти'] = 'sd_volum_max'
     return mark_safe(TABLE_HEAD + get_product_spec(product, model_name) + TABLE_TAIL)

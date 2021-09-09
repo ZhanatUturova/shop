@@ -15,6 +15,11 @@ from django.urls import reverse
 
 User = get_user_model()
 
+
+def get_models_for_count(*model_names):
+    return [models.Count(model_name) for model_name in model_names]
+
+
 # аналог функции get_absolute_url создает url для любой категории товара
 def get_product_url(obj, viewname):
     ct_model = obj.__class__._meta.model_name
@@ -64,10 +69,28 @@ class LatestProducts:
 #6 Customer
 #7 Specification
 
+class CategoryManager(models.Manager):
+
+    CATEGORY_NAME_COUNT_NAME = {
+        'Ноутбуки': 'notebook__count',
+        'Смартфоны': 'smartphone__count',
+    }
+
+    def get_queryset(self):
+        return super().get_queryset()
+
+    def get_categories_for_left_sidebar(self):
+        models = get_models_for_count('notebook', 'smartphone')
+        qs = list(self.get_queryset().annotate(*models).values())
+        return [dict(name=c['name'], slug=c['slug'], count=c[self.CATEGORY_NAME_COUNT_NAME[c['name']]]) for c in qs]
+
+
+
 class Category(models.Model):
 
     name = models.CharField(max_length=255, verbose_name='Имя категории')
     slug = models.SlugField(unique=True)
+    objects = CategoryManager()
 
     def __str__(self) -> str:
         return self.name
