@@ -104,8 +104,8 @@ class Category(models.Model):
 
 class Product(models.Model):
 
-    MIN_RESOLUTION = (400, 400)
-    MAX_RESOLUTION = (800, 800)
+    MIN_RESOLUTION = (200, 200)
+    MAX_RESOLUTION = (400, 400)
     MAX_IMAGE_SIZE = 3145728
 
     class Meta:
@@ -154,7 +154,7 @@ class Notebook(Product):
     ram = models.CharField(max_length=255, verbose_name='Оперативная память')
     video = models.CharField(max_length=255, verbose_name='Видеокарта')
     time_without_charge = models.CharField(max_length=255, verbose_name='Время работы аккумулятора')
-
+    
 
     def __str__(self):
         return '{} : {}'.format(self.category.name, self.title)
