@@ -1,17 +1,25 @@
 from django import template
 from django.db.models.base import Model
 from django.shortcuts import render
-from django.views.generic import DetailView
+from django.views.generic import DetailView, View
 
 from .models import Notebook, Smartphone, Category
-
-# Create your views here.
-def test_view(request):
-    categories = Category.objects.get_categories_for_left_sidebar()
-    return render(request, 'base.html', {'categories': categories})
+from .mixins import CategoryDetailMixin
 
 
-class ProductDetailView(DetailView):
+class BaseView(View):
+
+    def get(self, request, *args, **kwargs):
+        categories = Category.objects.get_categories_for_left_sidebar()
+        return render(request, 'base.html', {'categories': categories})
+
+
+# def test_view(request):
+#     categories = Category.objects.get_categories_for_left_sidebar()
+#     return render(request, 'base.html', {'categories': categories})
+
+
+class ProductDetailView(CategoryDetailMixin, DetailView):
 
     CT_MODEL_MODEL_CLASS = {
         'notebook': Notebook,
@@ -31,7 +39,7 @@ class ProductDetailView(DetailView):
     slug_url_kwarg = 'slug'
     
 
-class CategoryDetailView(DetailView):
+class CategoryDetailView(CategoryDetailMixin, DetailView):
 
     model = Category
     queryset = Category.objects.all()
